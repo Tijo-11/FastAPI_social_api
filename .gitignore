@@ -1,0 +1,52 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+
+# Virtual environment
+venv/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Byte-compiled / optimized / DLL files
+*.so
+*.dll
+*.dylib
+
+# Distribution / packaging
+build/
+dist/
+.eggs/
+pip-wheel-metadata/
+*.whl
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Coverage / testing
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+htmlcov/
+
+# Notes and documents
+notes/
+*.docx
+
+# Database (if using SQLite or others)
+*.db
+*.sqlite3
+
+# FastAPI specific (uvicorn reload artifacts)
+*.pid
