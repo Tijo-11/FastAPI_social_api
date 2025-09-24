@@ -13,6 +13,9 @@ class GlobalConfig(BaseSettings):
     env_state: Optional[Literal["development", "testing", "production"]] = (
         None  # Removed env="ENV_STATE"
     )
+    # Add secret settings
+    SECRET_KEY: str
+    ALGORITHM: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
