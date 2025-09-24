@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
 
 from social_media_api.database import comments, database, posts
@@ -11,9 +13,13 @@ from social_media_api.models.post import (
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
+
 
 async def find_post(post_id: int):
+    logger.info(f"finding post with id {post_id}")
     query = posts.select().where(posts.c.id == post_id)  # sqlalchemy query
+    logger.debug(query, extra={"email": "boban@example.com"})
     return await database.fetch_one(query)
 
 
@@ -27,7 +33,9 @@ async def create_post(post: UserPostIn):
 
 @router.get("/post", response_model=list[UserPost])
 async def get_all_posts():
+    logger.info("Getting all posts")
     query = posts.select()
+    logger.debug(query)
     return await database.fetch_all(query)
 
 
@@ -35,6 +43,7 @@ async def get_all_posts():
 async def create_comment(comment: CommentIn):
     post = await find_post(comment.post_id)
     if not post:
+        logger.error(f"Post with id {comment.post_id} not found")
         raise HTTPException(status_code=404, detail="Post not found")
     data = comment.model_dump()
     query = comments.insert().values(data)
