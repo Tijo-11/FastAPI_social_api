@@ -1,4 +1,3 @@
-# config.py
 from typing import Literal, Optional
 
 from pydantic import Field
@@ -11,20 +10,28 @@ class GlobalConfig(BaseSettings):
     items_per_user: int = Field(default=50)
     database_url: Optional[str] = None
     db_force_rollback: bool = Field(default=False)
-    env_state: Optional[Literal["development", "testing", "production"]] = Field(
-        default=None, env="ENV_STATE"
+    env_state: Optional[Literal["development", "testing", "production"]] = (
+        None  # Removed env="ENV_STATE"
     )
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="allow",  # Allow extra fields
+        env_prefix="",  # No prefix for global config
+        # Map ENV_STATE environment variable to env_state field
+        env_nested_delimiter="__",
+        # Optionally, you can specify custom environment variable names
+        # but here we rely on the field name matching ENV_STATE
     )
 
 
 class DevConfig(GlobalConfig):
     model_config = SettingsConfigDict(
-        env_prefix="DEV_", env_file=".env", env_file_encoding="utf-8"
+        env_prefix="DEV_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
     )
 
 
@@ -33,13 +40,19 @@ class TestConfig(GlobalConfig):
     db_force_rollback: bool = True
 
     model_config = SettingsConfigDict(
-        env_prefix="TEST_", env_file=".env", env_file_encoding="utf-8"
+        env_prefix="TEST_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
     )
 
 
 class ProdConfig(GlobalConfig):
     model_config = SettingsConfigDict(
-        env_prefix="PROD_", env_file=".env", env_file_encoding="utf-8"
+        env_prefix="PROD_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
     )
 
 

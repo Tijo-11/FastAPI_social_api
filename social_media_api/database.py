@@ -13,6 +13,15 @@ engine = sa.create_engine(
     connect_args={"check_same_thread": False},  # Only needed for SQLite
 )
 
+
+user_table = sa.Table(
+    "users",
+    metadata,
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("email", sa.String, unique=True),
+    sa.Column("password", sa.String),
+)
+
 posts = sa.Table(
     "posts",
     metadata,
