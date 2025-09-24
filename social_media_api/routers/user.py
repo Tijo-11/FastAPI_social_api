@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from social_media_api.database import database, user_table
 from social_media_api.models.user import UserIn
-from social_media_api.security import get_user
+from social_media_api.security import get_password_hash, get_user
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,8 @@ async def register_user(user: UserIn):
             detail="A user with this email already exists",
         )
         # never store password as plain text, hash it
-    query = user_table.insert().values(email=user.email, password=user.password)
+    hashed_password = get_password_hash(user.password)
+    query = user_table.insert().values(email=user.email, password=hashed_password)
 
     logger.debug(query)
 
