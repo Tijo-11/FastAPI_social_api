@@ -10,7 +10,7 @@ async def create_post(
     response = await async_client.post(
         "/post",
         json={"body": body},
-        headers={"Authorization": f"Bearer{logged_in_token}"},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     return response.json()
 
@@ -75,7 +75,7 @@ async def create_comment(
     response = await async_client.post(
         "/comment",
         json={"body": body, "post_id": post_id},
-        headers={"Authorization": f"Bearer{logged_in_token}"},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     return response.json()
 
@@ -91,14 +91,14 @@ async def created_comment(
 
 @pytest.mark.anyio
 async def test_create_comment(
-    async_client: AsyncClient,
-    created_post: dict,
+    async_client: AsyncClient, created_post: dict, logged_in_token: str
 ):
     body = "Test Comment"
 
     response = await async_client.post(
         "/comment",
         json={"body": body, "post_id": created_post["id"]},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     assert response.status_code == 201
     assert {
