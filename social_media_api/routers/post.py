@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from social_media_api.database import comments, database, posts
 from social_media_api.models.post import (
@@ -10,9 +10,10 @@ from social_media_api.models.post import (
     UserPostIn,
     UserPostWithComments,
 )
+from social_media_api.models.user import User
+from social_media_api.security import get_current_user, oauth2_scheme
 
 router = APIRouter()
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +25,9 @@ async def find_post(post_id: int):
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
-async def create_post(post: UserPostIn):
+async def create_post(post: UserPostIn, request: Request):
+    logger.info("creating psot")
+    current_user: User = get_current_user(oauth2_scheme(request))  # noqa
     data = post.model_dump()
     query = posts.insert().values(data)
     last_record_id = await database.execute(query)
@@ -40,11 +43,12 @@ async def get_all_posts():
 
 
 @router.post("/comment", response_model=Comment, status_code=201)
-async def create_comment(comment: CommentIn):
+async def create_comment(comment: CommentIn, request=Request):
     post = await find_post(comment.post_id)
     if not post:
         logger.error(f"Post with id {comment.post_id} not found")
         raise HTTPException(status_code=404, detail="Post not found")
+    current_user: User = get_current_user(oauth2_scheme(request))  # noqa
     data = comment.model_dump()
     query = comments.insert().values(data)
     last_record_id = await database.execute(query)
