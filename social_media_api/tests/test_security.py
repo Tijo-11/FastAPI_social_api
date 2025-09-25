@@ -63,7 +63,7 @@ async def test_login_wrong_password(registered_user: dict):
 # Testing email confirmation token
 @pytest.mark.anyio
 async def test_confirmation_token_expire_minutes():
-    assert security.access_token_expire_minutes() == 1440
+    assert security.confirm_token_expire_minutes() == 1440
 
 
 @pytest.mark.anyio
@@ -81,3 +81,66 @@ async def test_get_current_user_wrong_type_token(registered_user: dict):
 
     with pytest.raises(security.HTTPException):
         await security.get_current_user(token)
+
+
+# ---testing data extraction from confiramtion token
+@pytest.mark.anyio
+async def test_get_subject_for_token_type_valid_confirmation():
+    email = "test@example.com"
+    token = security.create_confirmation_token(email)
+    assert email == security.get_subject_for_token_type(token, "confirmation")
+
+
+@pytest.mark.anyio
+async def test_get_subject_for_token_type_valid_access():
+    email = "test@example.com"
+    token = security.create_access_token(email)
+    assert email == security.get_subject_for_token_type(token, "access")
+
+
+@pytest.mark.anyio
+async def test_get_subject_for_token_type_expired(mocker):
+    mocker.patch(
+        "social_media_api.security.access_token_expire_minutes", return_value=-1
+    )
+    email = "test@example.com"
+    token = security.create_access_token(email)
+    with pytest.raises(security.HTTPException) as exc_info:
+        security.get_subject_for_token_type(token, "access")
+
+    assert "Token has expired" == exc_info.value.detail
+
+
+@pytest.mark.anyio
+async def test_get_subject_for_token_type_Invalid_token():
+    token = "invalid token"
+    with pytest.raises(security.HTTPException) as exc_info:
+        security.get_subject_for_token_type(token, "access")
+
+    assert "Invalid Token" == exc_info.value.detail
+
+
+# sub field missing
+@pytest.mark.anyio
+async def test_get_subject_for_token_type_missing_sub():
+    email = "test@example.com"
+    token = security.create_access_token(email)
+    payload = jwt.decode(
+        token, key=security.SECRET_KEY, algorithms=[security.ALGORITHM]
+    )
+    del payload["sub"]
+    token = jwt.encode(payload, key=security.SECRET_KEY, algorithm=security.ALGORITHM)
+
+    with pytest.raises(security.HTTPException) as exc_info:
+        security.get_subject_for_token_type(token, "access")
+    assert "Token is missing 'sub'" <= exc_info.value.detail
+
+
+# wrong type
+@pytest.mark.anyio
+async def test_get_subject_for_token_type_wrong_type():
+    email = "test@example.com"
+    token = security.create_confirmation_token(email)
+    with pytest.raises(security.HTTPException) as exc_info:
+        security.get_subject_for_token_type(token, "access")
+    assert "Token has incorrect type" <= exc_info.value.detail

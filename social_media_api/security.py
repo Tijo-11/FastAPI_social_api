@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -66,40 +66,46 @@ async def get_user(email: str):
         return result
 
 
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
-)
+def create_credentials_exception(detail: str) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
 async def authenticate_user(email: str, password: str):
     user = await get_user(email)
     if not user:
-        raise credentials_exception
+        raise create_credentials_exception("Invalid email or password")
     if not verify_password(password, user.password):
-        raise credentials_exception
+        raise create_credentials_exception("Invalid email or password")
     return user
 
 
-# check whether token is access or confirmation also
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+# get subject of token from payload
+def get_subject_for_token_type(
+    token: str, type: Literal["access", "confiramtion"]
+) -> str:
     try:
         payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-        type = payload.get("type")
-        if type is None or type != "access":
-            raise credentials_exception
 
     except ExpiredSignatureError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from e
+        raise create_credentials_exception("Token has expired") from e
     except JWTError as e:
-        raise credentials_exception from e
+        raise create_credentials_exception("Invalid Token") from e
+
+    email = payload.get("sub")
+    if email is None:
+        raise create_credentials_exception("Token missing 'sub' field")
+    token_type = payload.get("type")
+    if type is None or token_type != type:
+        raise create_credentials_exception(
+            f"Token has incorrect type, expected '{type}'"
+        )
+    return email
+
+
+# check whether token is access or confirmation
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    email = get_subject_for_token_type(token, "access")
     user = await get_user(email=email)
     if user is None:
-        raise credentials_exception
+        raise create_credentials_exception("Could not find user for this token")
     return user
