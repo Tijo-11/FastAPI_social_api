@@ -63,11 +63,12 @@ async def test_create_post_expired_token(
     assert "Token has expired" in response.json()["detail"]
 
 
+# get all posts testing
 @pytest.mark.anyio
 async def test_get_all_posts(async_client: AsyncClient, created_post: dict):
     response = await async_client.get("/post")
     assert response.status_code == 200
-    assert response.json() == [created_post]
+    assert response.json() == [{**created_post, "likes": 0}]
 
 
 ##--------------------let's test comment
@@ -218,5 +219,15 @@ async def test_get_all_posts_sort_likes(
 
     post_ids = [post["id"] for post in data]
 
-    assert post_ids == expected_order  # pytest -k test_get_all_posts_sorting
-    # -- only runs this test
+    assert post_ids == expected_order
+
+
+# testing a method not in sorting
+@pytest.mark.anyio
+async def test_get_all_posts_wrong_sorting(
+    async_client: AsyncClient, logged_in_token: str
+):
+    await like_post(1, async_client, logged_in_token)
+
+    response = await async_client.get("/post", params={"sorting": "wrong"})
+    assert response.status_code == 422
