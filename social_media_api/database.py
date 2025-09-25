@@ -20,6 +20,7 @@ user_table = sa.Table(
     sa.Column("id", sa.Integer, primary_key=True),
     sa.Column("email", sa.String, unique=True),
     sa.Column("password", sa.String),
+    sa.Column("confirmed", sa.Boolean, default=False),
 )
 
 posts = sa.Table(

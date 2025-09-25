@@ -1,4 +1,5 @@
 import pytest
+from fastapi import Request
 from httpx import AsyncClient
 
 
@@ -32,3 +33,38 @@ async def test_login_user_not_exists(async_client: AsyncClient):
         "/token", json={"email": "noone@example.com", "password": "1234"}
     )
     assert response.status_code == 401
+
+
+# user confirmation testing
+@pytest.mark.anyio
+async def test_confirm_user(async_client: AsyncClient, mocker):
+    spy = mocker.spy(Request, "url_for")
+    await register_user(async_client, "test@example.net", "1234")
+    confirmation_url = str(spy.spy_return)
+    response = await async_client.get(confirmation_url)
+
+    assert response.status_code == 200
+    assert "User Confirmed" in response.json()["detail"]
+
+
+# user doesn't ahve valid token
+@pytest.mark.anyio
+async def test_confirm_user_invalid_token(async_client: AsyncClient):
+    response = await async_client.get("/confirm/invalid_token")
+
+    assert response.status_code == 401
+
+
+# user confirmation testing- expired token
+@pytest.mark.anyio
+async def test_confirm_user_expired_token(async_client: AsyncClient, mocker):
+    mocker.patch(
+        "social_media_api.security.confirm_token_expire_minutes", return_value=-1
+    )
+    spy = mocker.spy(Request, "url_for")
+    await register_user(async_client, "test@example.net", "1234")
+    confirmation_url = str(spy.spy_return)
+    response = await async_client.get(confirmation_url)
+
+    assert response.status_code == 401
+    assert "Token has expired" in response.json()["detail"]
