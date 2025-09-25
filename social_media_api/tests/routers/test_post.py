@@ -70,9 +70,10 @@ async def test_get_all_posts(async_client: AsyncClient, created_post: dict):
     assert response.json() == [created_post]
 
 
-##---let's test comment
+##--------------------let's test comment
 
 
+# Helper function
 async def create_comment(
     body: str, post_id: int, async_client: AsyncClient, logged_in_token: str
 ) -> dict:
@@ -91,6 +92,9 @@ async def created_comment(
     return await create_comment(
         "Test comment", created_post["id"], async_client, logged_in_token
     )
+
+
+##--testing
 
 
 @pytest.mark.anyio
@@ -135,7 +139,7 @@ async def test_get_post_with_comments(
     response = await async_client.get(f"/post/{created_post['id']}")
     assert response.status_code == 200
     assert response.json() == {
-        "post": created_post,
+        "post": {**created_post, "likes": 0},
         "comments": [created_comment],
     }
 
@@ -151,7 +155,7 @@ async def test_get_missing_post_with_comments(
 ##--------------------
 # async_client: AsyncClient is an instance of an asynchronous HTTP client (usually from httpx)
 # used to make non-blocking API calls—like sending a request to a backend service or external
-# API—within this like_post function. It allows efficient I/O operations without blocking the
+# API—within the function. It allows efficient I/O operations without blocking the
 # event loop.
 
 
@@ -166,3 +170,23 @@ async def like_post(
         headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     return response.json()
+
+
+##----------------------testing posts with sorting
+@pytest.mark.anyio
+async def test_get_all_posts_sorting(async_client: AsyncClient, logged_in_token: str):
+    await create_post("Test Post 1", async_client, logged_in_token)
+    await create_post("Test Post 2", async_client, logged_in_token)
+
+    response = await async_client.get("/post")
+    assert response.status_code == 200
+
+    data = response.json()
+    expected_order = [2, 1]
+    post_ids = [post["id"] for post in data]
+
+    assert post_ids == expected_order  # pytest -k test_get_all_posts_sorting
+    # -- only runs this test
+
+
+# -------------
