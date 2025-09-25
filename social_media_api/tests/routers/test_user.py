@@ -68,3 +68,31 @@ async def test_confirm_user_expired_token(async_client: AsyncClient, mocker):
 
     assert response.status_code == 401
     assert "Token has expired" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_login_user(async_client: AsyncClient, confirmed_user: dict):
+    response = await async_client.post(
+        "/token",
+        json={"email": confirmed_user["email"], "password": confirmed_user["password"]},
+    )
+
+    assert response.status_code == 200
+
+
+@pytest.mark.anyio
+async def test_login_user_not_confirmed(
+    async_client: AsyncClient, registered_user: dict
+):
+    response = await async_client.post(
+        "/token",
+        json={
+            "email": registered_user["email"],
+            "password": registered_user["password"],
+        },
+    )
+
+    assert response.status_code == 401
+
+
+# pytest social_media_api/tests/routers/test_user.py
