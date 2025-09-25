@@ -122,7 +122,7 @@ async def like_post(
     if not post:
         raise HTTPException(status_code=404, detail="Post Not Found")
 
-    data = {**like.dict(), "user_id": current_user.id}
+    data = {**like.model_dump(), "user_id": current_user.id}
     query = likes_table.insert().values(data)
 
     logger.debug(query)

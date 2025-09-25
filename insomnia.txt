@@ -12,3 +12,7 @@ code lines/snippets or the doubts of code snippets I send
 }
 _______
 Get comments http://127.0.0.1:8000/post/0/comment
+
+---------------------
+
+While debugging let's address one or maximum 2 potential issue at a time
