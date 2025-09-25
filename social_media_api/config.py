@@ -17,6 +17,10 @@ class GlobalConfig(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
 
+    # Add maigun
+    DEV_MAILGUN_API_KEY: Optional[str] = None
+    DEV_MAILGUN_DOMAIN: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
