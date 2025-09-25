@@ -1,4 +1,4 @@
-Give comments which are as explanatory as possible but as short as possible for the Django+React project 
+Give comments which are as explanatory as possible but as short as possible for the FastAPI+React project 
 code lines/snippets or the doubts of code snippets I send
 ################################
 

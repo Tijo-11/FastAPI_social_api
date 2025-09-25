@@ -27,6 +27,7 @@ posts = sa.Table(
     metadata,
     sa.Column("id", sa.Integer, primary_key=True),
     sa.Column("body", sa.String),
+    sa.Column("user_id", sa.ForeignKey("users.id"), nullable=False),
 )
 
 comments = sa.Table(
@@ -35,6 +36,15 @@ comments = sa.Table(
     sa.Column("id", sa.Integer, primary_key=True),
     sa.Column("body", sa.String),
     sa.Column("post_id", sa.ForeignKey("posts.id"), nullable=False),
+    sa.Column("user_id", sa.ForeignKey("users.id"), nullable=False),
+)
+
+likes_table = sa.Table(
+    "likes",
+    metadata,
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("post_id", sa.ForeignKey("posts.id"), nullable=False),
+    sa.Column("user_id", sa.ForeignKey("users.id"), nullable=False),
 )
 
 metadata.create_all(engine)  # Create tables after defining them

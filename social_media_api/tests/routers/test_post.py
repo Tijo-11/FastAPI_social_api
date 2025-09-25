@@ -22,7 +22,9 @@ async def created_post(async_client: AsyncClient, logged_in_token: str):
 
 ##testing
 @pytest.mark.anyio
-async def test_create_post(async_client: AsyncClient, logged_in_token: str):
+async def test_create_post(
+    async_client: AsyncClient, registered_user: dict, logged_in_token: str
+):
     body = "Test Post"
 
     response = await async_client.post(
@@ -31,7 +33,9 @@ async def test_create_post(async_client: AsyncClient, logged_in_token: str):
         headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     assert response.status_code == 201
-    assert ({"id": 1, "body": body}).items() <= response.json().items()
+    assert (
+        {"id": 1, "body": body, "user_id": registered_user["id"]}
+    ).items() <= response.json().items()
 
 
 @pytest.mark.anyio
@@ -91,13 +95,20 @@ async def created_comment(
 
 @pytest.mark.anyio
 async def test_create_comment(
-    async_client: AsyncClient, created_post: dict, logged_in_token: str
+    async_client: AsyncClient,
+    created_post: dict,
+    registered_user: dict,
+    logged_in_token: str,
 ):
     body = "Test Comment"
 
     response = await async_client.post(
         "/comment",
-        json={"body": body, "post_id": created_post["id"]},
+        json={
+            "body": body,
+            "post_id": created_post["id"],
+            "user_id": registered_user["id"],
+        },
         headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     assert response.status_code == 201
@@ -135,3 +146,23 @@ async def test_get_missing_post_with_comments(
 ):
     response = await async_client.get("/post/2")
     assert response.status_code == 404
+
+
+##--------------------
+# async_client: AsyncClient is an instance of an asynchronous HTTP client (usually from httpx)
+# used to make non-blocking API calls—like sending a request to a backend service or external
+# API—within this like_post function. It allows efficient I/O operations without blocking the
+# event loop.
+
+
+# ---------------------Adding test for liking------------
+# helper function
+async def like_post(
+    post_id: int, async_client: AsyncClient, logged_in_token: str
+) -> dict:
+    response = await async_client.post(
+        "/like",
+        json={"post_id": post_id},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    return response.json()
