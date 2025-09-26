@@ -194,4 +194,31 @@ async def test_get_all_posts_wrong_sorting(
     assert response.status_code == 422
 
 
+# fixture to prevent generate-image from running
+@pytest.fixture()
+async def mock_generate_cute_creature_api(mocker):
+    return mocker.patch(
+        "social_media_api.tasks.generate_cute_creature_api",
+        return_value={"output_url": "http://example.net/image.jpg"},
+    )
+
+
+# test post creation with image generation
+@pytest.mark.anyio
+async def test_create_post_with_prompt(
+    async_client, logged_in_token, mock_cute_creature_api
+):
+    response = await async_client.post(
+        "/posts/?prompt=a cat",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+        json={"title": "Test Post", "content": "Prompt test"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["image_url"] is None  # not ready yet
+
+    mock_cute_creature_api.assert_called()
+
+
 # pytest social_media_api/tests/routers/test_post.py

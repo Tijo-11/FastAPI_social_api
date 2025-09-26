@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Annotated
 
 import sqlalchemy
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 
 from social_media_api.database import comments, database, likes_table, posts
 from social_media_api.models.post import (
@@ -18,6 +18,7 @@ from social_media_api.models.post import (
 )
 from social_media_api.models.user import User
 from social_media_api.security import get_current_user
+from social_media_api.tasks import generate_and_add_to_post
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -40,13 +41,26 @@ async def find_post(post_id: int):
 
 @router.post("/post", response_model=UserPost, status_code=201)
 async def create_post(
-    post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]
+    post: UserPostIn,
+    current_user: Annotated[User, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
+    request: Request,
+    prompt: str = None,
 ):
     logger.info("creating psot")
 
     data = {**post.model_dump(), "user_id": current_user.id}
     query = posts.insert().values(data)
     last_record_id = await database.execute(query)
+    if prompt:
+        background_tasks.add_task(
+            generate_and_add_to_post,
+            current_user.email,
+            last_record_id,
+            request.url_for("get_post_with_comments", post_id=last_record_id),
+            database,
+            prompt,
+        )
     return {**data, "id": last_record_id}
 
 
