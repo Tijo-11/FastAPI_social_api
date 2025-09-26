@@ -10,6 +10,7 @@ from fastapi.exception_handlers import http_exception_handler
 from social_media_api.database import database
 from social_media_api.logging_conf import configure_logging  # Updated function name
 from social_media_api.routers.post import router as post_router
+from social_media_api.routers.upload import router as upload_router
 from social_media_api.routers.user import router as user_router
 
 print(f"Current working directory: {os.getcwd()}")
@@ -33,6 +34,7 @@ app.add_middleware(CorrelationIdMiddleware)
 
 app.include_router(post_router)
 app.include_router(user_router)
+app.include_router(upload_router)
 
 
 @app.get("/test-db")

@@ -21,6 +21,11 @@ class GlobalConfig(BaseSettings):
     DEV_MAILGUN_API_KEY: Optional[str] = None
     DEV_MAILGUN_DOMAIN: Optional[str] = None
 
+    ##file handling
+    B2_KEY_ID: Optional[str] = None
+    B2_APPLICATION_KEY: Optional[str] = None
+    B2_BUCKET_NAME: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
