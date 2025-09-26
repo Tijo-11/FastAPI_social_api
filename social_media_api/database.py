@@ -29,6 +29,7 @@ posts = sa.Table(
     sa.Column("id", sa.Integer, primary_key=True),
     sa.Column("body", sa.String),
     sa.Column("user_id", sa.ForeignKey("users.id"), nullable=False),
+    sa.Column("image_url", sa.String),
 )
 
 comments = sa.Table(

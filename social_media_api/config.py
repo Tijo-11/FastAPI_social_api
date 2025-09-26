@@ -26,6 +26,9 @@ class GlobalConfig(BaseSettings):
     B2_APPLICATION_KEY: Optional[str] = None
     B2_BUCKET_NAME: Optional[str] = None
 
+    ##image generation
+    DEEPAI_API_KEY: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

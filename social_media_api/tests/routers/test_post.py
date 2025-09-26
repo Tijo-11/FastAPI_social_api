@@ -2,22 +2,11 @@ import pytest
 from httpx import AsyncClient
 
 from social_media_api import security
-
-
-async def create_post(
-    body: str, async_client: AsyncClient, logged_in_token: str
-) -> dict:
-    response = await async_client.post(
-        "/post",
-        json={"body": body},
-        headers={"Authorization": f"Bearer {logged_in_token}"},
-    )
-    return response.json()
-
-
-@pytest.fixture()
-async def created_post(async_client: AsyncClient, logged_in_token: str):
-    return await create_post("Test Post", async_client, logged_in_token)
+from social_media_api.tests.helpers import (  # noqa
+    create_comment,
+    create_post,
+    like_post,
+)
 
 
 ##testing
@@ -34,7 +23,7 @@ async def test_create_post(
     )
     assert response.status_code == 201
     assert (
-        {"id": 1, "body": body, "user_id": confirmed_user["id"]}
+        {"id": 1, "body": body, "user_id": confirmed_user["id"], "image_url": None}
     ).items() <= response.json().items()
 
 
@@ -74,28 +63,13 @@ async def test_get_all_posts(async_client: AsyncClient, created_post: dict):
 ##--------------------let's test comment
 
 
-# Helper function
-async def create_comment(
-    body: str, post_id: int, async_client: AsyncClient, logged_in_token: str
-) -> dict:
-    response = await async_client.post(
-        "/comment",
-        json={"body": body, "post_id": post_id},
-        headers={"Authorization": f"Bearer {logged_in_token}"},
-    )
-    return response.json()
-
-
 @pytest.fixture()
 async def created_comment(
     async_client: AsyncClient, created_post: dict, logged_in_token: str
 ):
     return await create_comment(
-        "Test comment", created_post["id"], async_client, logged_in_token
+        "Test_comment", created_post["id"], async_client, logged_in_token
     )
-
-
-##--testing
 
 
 @pytest.mark.anyio
@@ -157,20 +131,7 @@ async def test_get_missing_post_with_comments(
 # async_client: AsyncClient is an instance of an asynchronous HTTP client (usually from httpx)
 # used to make non-blocking API calls—like sending a request to a backend service or external
 # API—within the function. It allows efficient I/O operations without blocking the
-# event loop.
-
-
-# ---------------------Adding test for liking------------
-# helper function
-async def like_post(
-    post_id: int, async_client: AsyncClient, logged_in_token: str
-) -> dict:
-    response = await async_client.post(
-        "/like",
-        json={"post_id": post_id},
-        headers={"Authorization": f"Bearer {logged_in_token}"},
-    )
-    return response.json()
+# event loops
 
 
 ##----------------------testing posts with sorting
