@@ -8,7 +8,7 @@ from social_media_api.libs.b2 import b2_upload_file
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter
+router = APIRouter()
 
 
 # client splits up file into  chunks 1 MB
