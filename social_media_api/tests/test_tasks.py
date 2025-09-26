@@ -7,7 +7,7 @@ from social_media_api.tasks import APIResponseError, send_simple_email
 @pytest.mark.anyio
 async def test_send_simple_email(mock_httpx_client):
     await send_simple_email("test@example.net", "Test Subject", "Test Body")
-    mock_httpx_client.assert_called()
+    mock_httpx_client.post.assert_called()
 
 
 @pytest.mark.anyio
