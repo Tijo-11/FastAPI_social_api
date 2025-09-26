@@ -129,7 +129,7 @@ async def get_post_with_comments(post_id: int):
 # Define Likes endpoints
 @router.post("/like", response_model=PostLike, status_code=201)
 async def like_post(
-    like: PostLikeIn, current_user=Annotated[User, Depends(get_current_user)]
+    like: PostLikeIn, current_user: Annotated[User, Depends(get_current_user)]
 ):
     logger.info("Liking Post")
     post = await find_post(like.post_id)

@@ -171,15 +171,12 @@ async def test_get_all_posts_sort_likes(
     await create_post("Test Post 1", async_client, logged_in_token)
     await create_post("Test Post 2", async_client, logged_in_token)
     await like_post(1, async_client, logged_in_token)
-
     response = await async_client.get("/post", params={"sorting": "most_likes"})
     assert response.status_code == 200
 
     data = response.json()
-    expected_order = [1, 2]
-
     post_ids = [post["id"] for post in data]
-
+    expected_order = [1, 2]
     assert post_ids == expected_order
 
 
@@ -198,7 +195,7 @@ async def test_get_all_posts_wrong_sorting(
 @pytest.fixture()
 async def mock_generate_cute_creature_api(mocker):
     return mocker.patch(
-        "social_media_api.tasks.generate_cute_creature_api",
+        "social_media_api.tasks._generate_cute_creature_api",
         return_value={"output_url": "http://example.net/image.jpg"},
     )
 
@@ -206,19 +203,20 @@ async def mock_generate_cute_creature_api(mocker):
 # test post creation with image generation
 @pytest.mark.anyio
 async def test_create_post_with_prompt(
-    async_client, logged_in_token, mock_cute_creature_api
+    async_client: AsyncClient, logged_in_token: str, mock_generate_cute_creature_api
 ):
     response = await async_client.post(
-        "/posts/?prompt=a cat",
+        "/post?prompt=A cat",
+        json={"body": "Test Post"},
         headers={"Authorization": f"Bearer {logged_in_token}"},
-        json={"title": "Test Post", "content": "Prompt test"},
     )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["image_url"] is None  # not ready yet
-
-    mock_cute_creature_api.assert_called()
+    assert response.status_code == 201
+    assert {
+        "id": 1,
+        "body": "Test Post",
+        "image_url": None,
+    }.items() <= response.json().items()
+    mock_generate_cute_creature_api.assert_called()
 
 
 # pytest social_media_api/tests/routers/test_post.py

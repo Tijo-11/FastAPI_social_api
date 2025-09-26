@@ -27,7 +27,7 @@ async def test_send_simple_email_api_error(mock_httpx_client):
         await send_simple_email("test@example.net", "Test Subject", "Test Body")
 
 
-# test image genearation
+# ---------------test image genearation--------------
 @pytest.mark.anyio
 async def test_generate_cute_creature_api_success(mock_httpx_client):
     json_data = {"output_url": "https://example.com/image.jpg"}
