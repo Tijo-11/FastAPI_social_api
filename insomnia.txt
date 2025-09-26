@@ -16,3 +16,16 @@ Get comments http://127.0.0.1:8000/post/0/comment
 ---------------------
 
 While debugging let's address one or maximum 2 potential issue at a time
+
+___________________
+e2b1a39 (HEAD -> master, origin/master) Email sending flow added, but test_post.py fails and email also fails, needs to debug
+19406ad All test's successfull
+0ba6f22 protected routes require email confirmation- test successful, except for login
+febce09 implemented confirmation email end point, but email sending functionality not done, test passed
+8f0e0de decoding confiramtion token tested
+7883e0e confirmation token creation token tested
+b3202d6 all tests except like sorting passed
+3a4052f id attribute error in test_get_all_posts_sort_likes, but same thing works in test_get_all_posts_sorting- some bug
+0c5d883 get_all_posts_sorting testing successful
+80fc8ce Testing of creating like successful
+:

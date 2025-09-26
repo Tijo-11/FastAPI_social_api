@@ -231,3 +231,6 @@ async def test_get_all_posts_wrong_sorting(
 
     response = await async_client.get("/post", params={"sorting": "wrong"})
     assert response.status_code == 422
+
+
+# pytest social_media_api/tests/routers/test_post.py

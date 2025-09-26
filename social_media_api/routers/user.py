@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Request, status
 
+from social_media_api import tasks
 from social_media_api.database import database, user_table
 from social_media_api.models.user import UserIn
 from social_media_api.security import (
@@ -33,9 +34,16 @@ async def register_user(user: UserIn, request: Request):
 
     await database.execute(query)
 
+    await tasks.send_user_registration_email(
+        user.email,
+        confirmation_url=request.url_for(
+            "confirm_email", token=create_confirmation_token(user.email)
+        ),
+    )
+
     return {
         "detail": "User created, please confirm your email.",
-        "confirmation_email": request.url_for(
+        "confirmation_url": request.url_for(
             "confirm_email", token=create_confirmation_token(user.email)
         ),
     }

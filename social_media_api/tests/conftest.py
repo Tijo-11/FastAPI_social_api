@@ -1,11 +1,10 @@
 import os
 from typing import AsyncGenerator, Generator
-from unittest.mock import AsyncMock  # , Mock
+from unittest.mock import AsyncMock, Mock
 
-import httpx
 import pytest
 from fastapi.testclient import TestClient
-from httpx import ASGITransport, AsyncClient  # , Request, Response
+from httpx import ASGITransport, AsyncClient, Request, Response
 
 os.environ["ENV_STATE"] = "testing"
 
@@ -68,13 +67,13 @@ async def confirmed_user(registered_user: dict) -> dict:
 
 
 # mailgun email sending
-@pytest.fixture
+@pytest.fixture(autouse=True)
 async def mock_httpx_client(mocker):
     mocked_client = mocker.patch("social_media_api.tasks.httpx.AsyncClient")
-    mocked_async_client = AsyncMock()
-    response = httpx.Response(
-        status_code=200, content=b"", request=httpx.Request("POST", "//")
-    )
-    mocked_async_client.post.return_value = response
+
+    mocked_async_client = Mock()
+    response = Response(status_code=200, content="", request=Request("POST", "//"))
+    mocked_async_client.post = AsyncMock(return_value=response)
     mocked_client.return_value.__aenter__.return_value = mocked_async_client
+
     return mocked_async_client
